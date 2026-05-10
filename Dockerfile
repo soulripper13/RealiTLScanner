@@ -21,8 +21,11 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
     fi; \
     go build -trimpath -ldflags="-s -w" -o /out/RealiTLScanner .
 
-FROM alpine:latest
-RUN apk add --no-cache ca-certificates
-WORKDIR /app
-COPY --from=build /out/RealiTLScanner .
-ENTRYPOINT ["./RealiTLScanner"]
+FROM scratch
+LABEL org.opencontainers.image.source="https://github.com/soulripper13/RealiTLScanner" \
+      org.opencontainers.image.description="Reality TLS scanner" \
+      org.opencontainers.image.licenses="MPL-2.0"
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=build /out/RealiTLScanner /app/RealiTLScanner
+WORKDIR /data
+ENTRYPOINT ["/app/RealiTLScanner"]

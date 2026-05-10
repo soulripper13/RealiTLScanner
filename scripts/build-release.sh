@@ -46,6 +46,7 @@ build_one linux amd64
 build_one linux arm64
 build_one linux arm 7
 build_one linux arm 6
+build_one linux arm 5
 build_one darwin amd64
 build_one darwin arm64
 build_one windows amd64

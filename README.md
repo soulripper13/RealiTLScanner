@@ -63,29 +63,96 @@ It is recommended to run this tool locally, as running the scanner in the cloud 
 # Set a timeout for each scan, default: 10 (seconds)
 ./RealiTLScanner -addr 107.172.1.1/16 -timeout 5
 ```
-### In docker way
-Build container by yourself (you do not need Golang on your host)
+### Docker
+
+Use the published multi-platform image:
+
+```bash
+docker run --rm ghcr.io/soulripper13/realitlscanner:latest -addr 1.1.1.1
+```
+
+Write output to your current directory:
+
+```bash
+docker run --rm \
+  -v "$PWD:/data" \
+  ghcr.io/soulripper13/realitlscanner:latest \
+  -addr 1.1.1.1 -out /data/out.csv
+```
+
+Use an input file:
+
+```bash
+docker run --rm \
+  -v "$PWD:/data" \
+  ghcr.io/soulripper13/realitlscanner:latest \
+  -in /data/in.txt -out /data/out.csv
+```
+
+Build locally only if you want a custom image:
+
 ```bash
 docker build -t realitlscanner .
-```
-Build a multi-platform image with Docker Buildx:
-```bash
-# Build one platform and load it into the local Docker image store
-docker buildx build --platform linux/amd64 -t realitlscanner --load .
-
-# Build and push a multi-platform image
-docker buildx build \
-  --platform linux/amd64,linux/arm64,linux/arm/v7 \
-  -t your-registry/realitlscanner:latest \
-  --push .
-```
-Run and research
-```bash
-# show help
-docker run --rm realitlscanner
-# scan
 docker run --rm realitlscanner -addr 1.1.1.1
 ```
+
+The GitHub Actions workflow publishes this image automatically for:
+
+- `linux/amd64`
+- `linux/arm64`
+- `linux/arm/v7`
+- `linux/arm/v6`
+- `linux/arm/v5`
+
+If the first pull asks for authentication, make the GHCR package public in the
+repository package settings.
+
+Manually publish the multi-platform image:
+
+```bash
+docker buildx build \
+  --platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6,linux/arm/v5 \
+  -t ghcr.io/soulripper13/realitlscanner:latest \
+  --sbom=false \
+  --provenance=false \
+  --push .
+```
+
+### MikroTik RouterOS container
+
+Use the published image directly:
+
+```routeros
+/container/add name=realitlscanner remote-image=soulripper13/realitlscanner:latest interface=veth-realitl root-dir=disk1/realitlscanner mountlists=realitl-data logging=yes cmd="-addr 1.1.1.1 -out /data/out.csv"
+/container/start realitlscanner
+```
+
+First-time RouterOS container setup:
+
+```routeros
+/system/device-mode/update container=yes
+/system/resource/print
+```
+
+Create the container network and output mount once. Replace `disk1` with your
+external storage name if it is different.
+
+```routeros
+/interface/veth/add name=veth-realitl address=172.18.0.2/24 gateway=172.18.0.1
+/interface/bridge/add name=containers
+/ip/address/add address=172.18.0.1/24 interface=containers
+/interface/bridge/port add bridge=containers interface=veth-realitl
+/ip/firewall/nat/add chain=srcnat action=masquerade src-address=172.18.0.0/24
+
+/container/config/set registry-url=https://ghcr.io tmpdir=disk1/tmp
+/container/mounts/add list=realitl-data src=disk1/realitlscanner-data dst=/data
+/container/add name=realitlscanner remote-image=soulripper13/realitlscanner:latest interface=veth-realitl root-dir=disk1/realitlscanner mountlists=realitl-data logging=yes cmd="-addr 1.1.1.1 -out /data/out.csv"
+/container/start realitlscanner
+```
+
+This scanner runs as a one-shot job and then exits. Change the `cmd` value when
+you want to scan a different target, then start the container again.
+
 ### Enable Geo IP
 
 To enable Geo IP information, place a MaxMind GeoLite2/GeoIP2 Country Database in the executing folder with the exact name `Country.mmdb`. You can download one from [here](https://github.com/Loyalsoldier/geoip/releases/latest/download/Country.mmdb).
