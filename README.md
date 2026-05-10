@@ -1,11 +1,34 @@
 # Reality - TLS - Scanner
 
-## Building
+## Download
+
+Download prebuilt binaries from the [GitHub Releases](https://github.com/soulripper13/RealiTLScanner/releases) page.
+Release archives are built for:
+
+- Linux: `amd64`, `arm64`, `armv7`, `armv6`
+- macOS: `amd64`, `arm64`
+- Windows: `amd64`, `arm64`
+
+## Building from source
 
 Requirement: Go 1.21+
 
 ```bash
 go build
+```
+
+To build all release archives locally:
+
+```bash
+VERSION=dev sh scripts/build-release.sh
+```
+
+To publish prebuilt binaries, push a version tag. GitHub Actions will build the
+archives and attach them to a GitHub Release:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
 ## Usage

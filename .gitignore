@@ -1,0 +1,9 @@
+RealiTLScanner
+RealiTLScanner.exe
+dist/
+results.txt
+.idea
+in.txt
+out.txt
+out.csv
+Country.mmdb
