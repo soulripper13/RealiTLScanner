@@ -13,6 +13,7 @@ RUN --mount=type=cache,target=/go/pkg/mod go mod download
 COPY . .
 RUN --mount=type=cache,target=/root/.cache/go-build \
     set -eux; \
+    export CGO_ENABLED=0; \
     export GOOS="${TARGETOS:-linux}"; \
     export GOARCH="${TARGETARCH:-$(go env GOARCH)}"; \
     if [ "$GOARCH" = "arm" ] && [ -n "$TARGETVARIANT" ]; then \

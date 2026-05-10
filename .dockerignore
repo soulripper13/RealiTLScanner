@@ -1,0 +1,10 @@
+.git
+.gitignore
+.idea
+RealiTLScanner
+RealiTLScanner.exe
+results.txt
+in.txt
+out.txt
+out.csv
+Country.mmdb
